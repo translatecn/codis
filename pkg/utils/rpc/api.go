@@ -30,6 +30,7 @@ const (
 var client *http.Client
 
 func init() {
+	fmt.Println("pkg/utils/rpc/api.go:33")
 	var dials atomic2.Int64
 	tr := &http.Transport{}
 	tr.Dial = func(network, addr string) (net.Conn, error) {

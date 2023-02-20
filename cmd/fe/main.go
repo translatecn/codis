@@ -34,6 +34,7 @@ import (
 var roundTripper http.RoundTripper
 
 func init() {
+	fmt.Println("cmd/fe/main.go:37")
 	var dials atomic2.Int64
 	tr := &http.Transport{}
 	tr.Dial = func(network, addr string) (net.Conn, error) {

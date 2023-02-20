@@ -42,7 +42,8 @@ func (s *Topom) CreateProxy(addr string) error {
 	}
 }
 
-func (s *Topom) OnlineProxy(addr string) error {
+// OnlineProxy 将proxy标记为上线状态
+func (s *Topom) OnlineProxy(proxyAddr string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ctx, err := s.newContext()
@@ -50,14 +51,14 @@ func (s *Topom) OnlineProxy(addr string) error {
 		return err
 	}
 
-	p, err := proxy.NewApiClient(addr).Model()
+	p, err := proxy.NewApiClient(proxyAddr).Model() // http request
 	if err != nil {
-		return errors.Errorf("proxy@%s fetch model failed", addr)
+		return errors.Errorf("proxy@%s fetch model failed", proxyAddr)
 	}
 	c := s.newProxyClient(p)
 
-	if err := c.XPing(); err != nil {
-		return errors.Errorf("proxy@%s check xauth failed", addr)
+	if err := c.XPing(); err != nil { // xping接口     ，proxy、dashboard 都实现了
+		return errors.Errorf("proxy@%s check xauth failed", proxyAddr)
 	}
 	defer s.dirtyProxyCache(p.Token)
 

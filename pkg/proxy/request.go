@@ -12,8 +12,8 @@ import (
 )
 
 type Request struct {
-	Multi []*redis.Resp
-	Batch *sync.WaitGroup
+	Multi []*redis.Resp   // 请求入参
+	Batch *sync.WaitGroup // 同步机制
 	Group *sync.WaitGroup
 
 	Broken *atomic2.Bool
@@ -24,8 +24,8 @@ type Request struct {
 	Database int32
 	UnixNano int64
 
-	*redis.Resp
-	Err error
+	*redis.Resp // redis响应
+	Err         error
 
 	Coalesce func() error
 }

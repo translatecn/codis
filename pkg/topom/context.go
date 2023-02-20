@@ -18,13 +18,11 @@ import (
 const MaxSlotNum = models.MaxSlotNum
 
 type context struct {
-	slots []*models.SlotMapping
-	group map[int]*models.Group
-	proxy map[string]*models.Proxy
-
+	slots    []*models.SlotMapping
+	group    map[int]*models.Group
+	proxy    map[string]*models.Proxy
 	sentinel *models.Sentinel
-
-	hosts struct {
+	hosts    struct {
 		sync.Mutex
 		m map[string]net.IP
 	}
@@ -218,6 +216,7 @@ func (ctx *context) minSyncActionIndex() string {
 	for _, g := range ctx.group {
 		for _, x := range g.Servers {
 			if x.Action.State == models.ActionPending {
+				// 选出Action.Index最小的那台服务器
 				if d == nil || x.Action.Index < d.Action.Index {
 					d = x
 				}

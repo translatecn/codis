@@ -405,6 +405,8 @@ func (p *Pool) getClientFromCache(addr string) (*Client, error) {
 	if list := p.pool[addr]; list != nil {
 		for i := list.Len(); i != 0; i-- {
 			c := list.Remove(list.Front()).(*Client)
+			//一个client可被回收的条件是，Pool的timeout为0，或者这个client上一次使用距离现在小于Pool.timeout
+			//ha和stats里面的Pool的timeout为5秒，action的则根据配置文件dashboard.toml中的migration_timeout一项来决定
 			if !c.isRecyclable() {
 				c.Close()
 			} else {
@@ -415,7 +417,7 @@ func (p *Pool) getClientFromCache(addr string) (*Client, error) {
 	return nil, nil
 }
 
-func (p *Pool) PutClient(c *Client) {
+func (p *Pool) PutBackClient(c *Client) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if !c.isRecyclable() || p.closed {
@@ -435,16 +437,16 @@ func (p *Pool) Info(addr string) (_ map[string]string, err error) {
 	if err != nil {
 		return nil, err
 	}
-	defer p.PutClient(c)
+	defer p.PutBackClient(c)
 	return c.Info()
 }
 
-func (p *Pool) InfoFull(addr string) (_ map[string]string, err error) {
+func (p *Pool) InfoFull(addr string) (_ map[string]string, err error) { // 获取全部信息
 	c, err := p.GetClient(addr)
 	if err != nil {
 		return nil, err
 	}
-	defer p.PutClient(c)
+	defer p.PutBackClient(c)
 	return c.InfoFull()
 }
 

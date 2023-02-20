@@ -1,5 +1,6 @@
 // Copyright 2016 CodisLabs. All Rights Reserved.
 // Licensed under the MIT (MIT-LICENSE.txt) license.
+// dashboard是codis的集群管理工具，支持proxy和server的添加、删除、数据迁移，所有对集群的操作必须通过dashboard。
 
 package main
 

@@ -147,6 +147,7 @@ func (bc *BackendConn) KeepAlive() bool {
 var keepAliveCallback = make(chan func(), 128)
 
 func init() {
+	fmt.Println("pkg/proxy/backend.go:150")
 	go func() {
 		for fn := range keepAliveCallback {
 			fn()
@@ -349,18 +350,21 @@ func (bc *BackendConn) loopWriter(round int) (err error) {
 	p := c.FlushEncoder()
 	p.MaxInterval = time.Millisecond
 	p.MaxBuffered = cap(tasks) / 2
-
+	// 从input chan读取请求
 	for r := range bc.input {
 		if r.IsReadOnly() && r.IsBroken() {
 			bc.setResponse(r, nil, ErrRequestIsBroken)
 			continue
 		}
+		// 编码req
 		if err := p.EncodeMultiBulk(r.Multi); err != nil {
 			return bc.setResponse(r, nil, fmt.Errorf("backend conn failure, %s", err))
 		}
+		// flush王法.发送给redis实例
 		if err := p.Flush(len(bc.input) == 0); err != nil {
 			return bc.setResponse(r, nil, fmt.Errorf("backend conn failure, %s", err))
 		} else {
+			// req放入task队列，等待redis实例返回的响应
 			tasks <- r
 		}
 	}

@@ -119,7 +119,7 @@ func (s *Topom) SlotCreateActionRange(beg, end int, gid int, must bool) error {
 	if len(g.Servers) == 0 {
 		return errors.Errorf("group-[%d] is empty", g.Id)
 	}
-
+	// 把[beg,end]的slot迁移到gid
 	var pending []int
 	for sid := beg; sid <= end; sid++ {
 		m, err := ctx.getSlotMapping(sid)
@@ -147,10 +147,11 @@ func (s *Topom) SlotCreateActionRange(beg, end int, gid int, must bool) error {
 			return err
 		}
 		defer s.dirtySlotsCache(m.Id)
-
+		//更改状态
 		m.Action.State = models.ActionPending
 		m.Action.Index = ctx.maxSlotActionIndex() + 1
 		m.Action.TargetId = g.Id
+		//更新状态
 		if err := s.storeUpdateSlotMapping(m); err != nil {
 			return err
 		}
@@ -396,7 +397,7 @@ func (s *Topom) newSlotActionExecutor(sid int) (func(db int) (remains int, nextd
 			if err != nil {
 				return 0, -1, err
 			}
-			defer s.action.redisp.PutClient(c)
+			defer s.action.redisp.PutBackClient(c)
 
 			if err := c.Select(db); err != nil {
 				return 0, -1, err
@@ -478,6 +479,7 @@ func (s *Topom) SlotsAssignGroup(slots []*models.SlotMapping) error {
 		if len(g.Servers) == 0 {
 			return errors.Errorf("group-[%d] is empty", g.Id)
 		}
+		// 要求slot一定不能处于被迁移状态
 		if m.Action.State != models.ActionNothing {
 			return errors.Errorf("invalid slot-[%d] action = %s", m.Id, m.Action.State)
 		}

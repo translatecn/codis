@@ -213,7 +213,8 @@ func (s *Session) loopWriter(tasks *RequestChan) (err error) {
 	p := s.Conn.FlushEncoder()
 	p.MaxInterval = time.Millisecond
 	p.MaxBuffered = maxPipelineLen / 2
-
+	// 循环从task中取出一个请求，然后编码响应
+	// flush操作，发送数据到网卡
 	return tasks.PopFrontAll(func(r *Request) error {
 		resp, err := s.handleResponse(r)
 		if err != nil {
@@ -242,6 +243,7 @@ func (s *Session) loopWriter(tasks *RequestChan) (err error) {
 func (s *Session) handleResponse(r *Request) (*redis.Resp, error) {
 	r.Batch.Wait()
 	if r.Coalesce != nil {
+		// 聚合读取结果，假设一个请求比如MGet， 分布在不同的redis实例上，需要聚合.
 		if err := r.Coalesce(); err != nil {
 			return nil, err
 		}

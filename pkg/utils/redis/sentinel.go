@@ -20,10 +20,9 @@ import (
 
 type Sentinel struct {
 	context.Context
-	Cancel context.CancelFunc
-
-	Product, Auth string
-
+	Cancel  context.CancelFunc
+	Product string
+	Auth    string
 	LogFunc func(format string, args ...interface{})
 	ErrFunc func(err error, format string, args ...interface{})
 }
@@ -84,7 +83,7 @@ func (s *Sentinel) do(sentinel string, timeout time.Duration,
 	return fn(c)
 }
 
-func (s *Sentinel) dispatch(ctx context.Context, sentinel string, timeout time.Duration,
+func (s *Sentinel) dispatchWarf(ctx context.Context, sentinel string, timeout time.Duration,
 	fn func(client *Client) error) error {
 	c, err := NewClientNoAuth(sentinel, timeout)
 	if err != nil {
@@ -106,12 +105,12 @@ func (s *Sentinel) dispatch(ctx context.Context, sentinel string, timeout time.D
 	}
 }
 
-func (s *Sentinel) subscribeCommand(client *Client, sentinel string,
-	onSubscribed func()) error {
+func (s *Sentinel) subscribeCommand(client *Client, sentinel string, onSubscribed func()) error {
 	defer func() {
 		client.Close()
 	}()
-	var channels = []interface{}{"+switch-master"}
+	var channels = []interface{}{"+switch-master"} // master 切换的通知消息
+	// +switch-master mymaster 192.168.79.152 6379 192.168.79.153 6379
 	go func() {
 		client.Send("SUBSCRIBE", channels...)
 		client.Flush()
@@ -159,9 +158,8 @@ func (s *Sentinel) subscribeCommand(client *Client, sentinel string,
 	}
 }
 
-func (s *Sentinel) subscribeDispatch(ctx context.Context, sentinel string, timeout time.Duration,
-	onSubscribed func()) (bool, error) {
-	var err = s.dispatch(ctx, sentinel, timeout, func(c *Client) error {
+func (s *Sentinel) subscribeDispatch(ctx context.Context, sentinel string, timeout time.Duration, onSubscribed func()) (bool, error) {
+	var err = s.dispatchWarf(ctx, sentinel, timeout, func(c *Client) error {
 		return s.subscribeCommand(c, sentinel, onSubscribed)
 	})
 	if err != nil {
@@ -175,6 +173,7 @@ func (s *Sentinel) subscribeDispatch(ctx context.Context, sentinel string, timeo
 	return true, nil
 }
 
+// Subscribe 重新互相监听
 func (s *Sentinel) Subscribe(sentinels []string, timeout time.Duration, onMajoritySubscribed func()) bool {
 	cntx, cancel := context.WithTimeout(s.Context, timeout)
 	defer cancel()
@@ -182,7 +181,7 @@ func (s *Sentinel) Subscribe(sentinels []string, timeout time.Duration, onMajori
 	timeout += time.Second * 5
 	results := make(chan bool, len(sentinels))
 
-	var majority = 1 + len(sentinels)/2
+	var majority = 1 + len(sentinels)/2 // 大多数
 
 	var subscribed atomic2.Int64
 	for i := range sentinels {
@@ -198,7 +197,7 @@ func (s *Sentinel) Subscribe(sentinels []string, timeout time.Duration, onMajori
 			results <- notified
 		}(sentinels[i])
 	}
-
+	// ToDo， 不太理解这块的逻辑
 	for alive := len(sentinels); ; alive-- {
 		if alive < majority {
 			if cntx.Err() == nil {
@@ -229,6 +228,11 @@ func (s *Sentinel) existsCommand(client *Client, names []string) (map[string]boo
 	}()
 	go func() {
 		for _, name := range names {
+			// 127.0.0.1:26379> SENTINEL get-master-addr-by-name mymaster2
+			//(nil)
+			//127.0.0.1:26379> SENTINEL get-master-addr-by-name mymaster
+			//1) "127.0.0.1"
+			//2) "6379"
 			client.Send("SENTINEL", "get-master-addr-by-name", name)
 		}
 		if len(names) != 0 {
@@ -241,18 +245,19 @@ func (s *Sentinel) existsCommand(client *Client, names []string) (map[string]boo
 		if err != nil {
 			return nil, errors.Trace(err)
 		}
-		exists[name] = (r != nil)
+		exists[name] = r != nil
 	}
 	return exists, nil
 }
 
+// 获取所有master分别对应的slave
 func (s *Sentinel) slavesCommand(client *Client, names []string) (map[string][]map[string]string, error) {
 	defer func() {
 		if !client.isRecyclable() {
 			client.Close()
 		}
 	}()
-	exists, err := s.existsCommand(client, names)
+	exists, err := s.existsCommand(client, names) // 验证master是否存在,记录了结果
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +268,7 @@ func (s *Sentinel) slavesCommand(client *Client, names []string) (map[string][]m
 				continue
 			}
 			pending++
-			client.Send("SENTINEL", "slaves", name)
+			client.Send("SENTINEL", "replicas", name) // 获取某个主节点的所有从节点
 		}
 		if pending != 0 {
 			client.Flush()
@@ -291,6 +296,7 @@ func (s *Sentinel) slavesCommand(client *Client, names []string) (map[string][]m
 	return results, nil
 }
 
+// SENTINEL masters 命令  显示所有监听中的主机的状态
 func (s *Sentinel) mastersCommand(client *Client) (map[int]map[string]string, error) {
 	defer func() {
 		if !client.isRecyclable() {
@@ -315,10 +321,11 @@ func (s *Sentinel) mastersCommand(client *Client) (map[int]map[string]string, er
 	return masters, nil
 }
 
+// ok
 func (s *Sentinel) mastersDispatch(ctx context.Context, sentinel string, timeout time.Duration) (map[int]*SentinelMaster, error) {
 	var masters = make(map[int]*SentinelMaster)
-	var err = s.dispatch(ctx, sentinel, timeout, func(c *Client) error {
-		p, err := s.mastersCommand(c)
+	var err = s.dispatchWarf(ctx, sentinel, timeout, func(c *Client) error {
+		p, err := s.mastersCommand(c) // 对钩
 		if err != nil {
 			return err
 		}
@@ -500,7 +507,7 @@ func (s *Sentinel) monitorGroupsCommand(client *Client, sentniel string, config 
 
 func (s *Sentinel) monitorGroupsDispatch(ctx context.Context, sentinel string, timeout time.Duration,
 	config *MonitorConfig, groups map[int]*net.TCPAddr) error {
-	var err = s.dispatch(ctx, sentinel, timeout, func(c *Client) error {
+	var err = s.dispatchWarf(ctx, sentinel, timeout, func(c *Client) error {
 		return s.monitorGroupsCommand(c, sentinel, config, groups)
 	})
 	if err != nil {
@@ -625,7 +632,7 @@ func (s *Sentinel) removeGroupsDispatch(ctx context.Context, sentinel string, ti
 	for gid := range groups {
 		names = append(names, s.NodeName(gid))
 	}
-	var err = s.dispatch(ctx, sentinel, timeout, func(c *Client) error {
+	var err = s.dispatchWarf(ctx, sentinel, timeout, func(c *Client) error {
 		return s.removeCommand(c, names)
 	})
 	if err != nil {
@@ -674,7 +681,7 @@ func (s *Sentinel) RemoveGroups(sentinels []string, timeout time.Duration, group
 }
 
 func (s *Sentinel) removeGroupsAllDispatch(ctx context.Context, sentinel string, timeout time.Duration) error {
-	var err = s.dispatch(ctx, sentinel, timeout, func(c *Client) error {
+	var err = s.dispatchWarf(ctx, sentinel, timeout, func(c *Client) error {
 		masters, err := s.mastersCommand(c)
 		if err != nil {
 			return err
@@ -731,25 +738,26 @@ func (s *Sentinel) RemoveGroupsAll(sentinels []string, timeout time.Duration) er
 }
 
 type SentinelGroup struct {
-	Master map[string]string   `json:"master"`
-	Slaves []map[string]string `json:"slaves,omitempty"`
+	Master map[string]string   `json:"master"`           // master节点的一些信息, k,v
+	Slaves []map[string]string `json:"slaves,omitempty"` // 每个slave存储的信息，k,v
 }
 
+// MastersAndSlavesClient 获取哨兵节点内的 masters slaves
 func (s *Sentinel) MastersAndSlavesClient(client *Client) (map[string]*SentinelGroup, error) {
 	defer func() {
 		if !client.isRecyclable() {
 			client.Close()
 		}
 	}()
-	masters, err := s.mastersCommand(client)
+	masters, err := s.mastersCommand(client) // 所有监听中的master主机节点
 	if err != nil {
 		return nil, err
 	}
 	var names []string
 	for gid := range masters {
-		names = append(names, s.NodeName(gid))
+		names = append(names, s.NodeName(gid)) // master节点的名称
 	}
-	slaves, err := s.slavesCommand(client, names)
+	slaves, err := s.slavesCommand(client, names) // 获取所有master分别对应的slave
 	if err != nil {
 		return nil, err
 	}
@@ -763,6 +771,7 @@ func (s *Sentinel) MastersAndSlavesClient(client *Client) (map[string]*SentinelG
 	return results, nil
 }
 
+// MastersAndSlaves 获取master、slave信息
 func (s *Sentinel) MastersAndSlaves(sentinel string, timeout time.Duration) (map[string]*SentinelGroup, error) {
 	var results map[string]*SentinelGroup
 	var err = s.do(sentinel, timeout, func(c *Client) error {

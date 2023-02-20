@@ -54,7 +54,7 @@ go version go1.7.3 linux/amd64
 
 #### 2. Set the compilation environment
 
-Add `$GOPATH/bin` To `$PATH`，For Example：`PATH=$PATH:$GOPATH/bin`。
+Add `$GOPATH/bin` To `$PATH`，For Example：`PATH=$PATH:$GOPATH/bin`.
 
 ```bash
 $ go env GOPATH

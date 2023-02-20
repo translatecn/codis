@@ -39,18 +39,18 @@ type Proxy struct {
 	closed bool
 
 	config *Config
-	router *Router
+	router *Router // 路由消息
 	ignore []byte
 
-	lproxy net.Listener
-	ladmin net.Listener
+	lproxy net.Listener // 处理redis业务请求		 用于接收来自redis-cli的命令
+	ladmin net.Listener // 处理dashboard进程消息   用于接收来自dashboard的命令
 
-	ha struct {
+	ha struct { // 订阅sentinel信息，感知消息切主信息
 		monitor *redis.Sentinel
 		masters map[int]string
 		servers []string
 	}
-	jodis *Jodis
+	jodis *Jodis // 把自己的ip,port写入storage,以供外部业务通过consule发现.
 }
 
 var ErrClosedProxy = errors.New("use of closed proxy")
@@ -340,7 +340,7 @@ func (s *Proxy) rewatchSentinels(servers []string) {
 				for !p.IsCanceled() {
 					timeout := time.Minute * 15
 					retryAt := time.Now().Add(time.Second * 10)
-					if !p.Subscribe(servers, timeout, callback) {
+					if !p.Subscribe(servers, timeout, callback) { // ✅
 						delayUntil(retryAt)
 					} else {
 						callback()

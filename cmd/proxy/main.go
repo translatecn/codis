@@ -239,6 +239,7 @@ Options:
 	log.Warnf("[%p] proxy is exiting ...", s)
 }
 
+// AutoGOMAXPROCS ok
 func AutoGOMAXPROCS(min, max int) {
 	for {
 		var ncpu = runtime.GOMAXPROCS(0)
@@ -286,7 +287,7 @@ func AutoOnlineWithDashboard(p *proxy.Proxy, dashboard string) {
 		if p.IsClosed() || p.IsOnline() {
 			return
 		}
-		if OnlineProxy(p, dashboard) {
+		if IsOnlineProxy(p, dashboard) {
 			return
 		}
 		time.Sleep(time.Second * 3)
@@ -307,7 +308,7 @@ func AutoOnlineWithCoordinator(p *proxy.Proxy, name, addr, auth string) {
 		t, err := models.LoadTopom(client, p.Config().ProductName, false)
 		if err != nil {
 			log.WarnErrorf(err, "load & decode topom failed")
-		} else if t != nil && OnlineProxy(p, t.AdminAddr) {
+		} else if t != nil && IsOnlineProxy(p, t.AdminAddr) {
 			return
 		}
 		time.Sleep(time.Second * 3)
@@ -324,7 +325,7 @@ func AutoOnlineWithFillSlots(p *proxy.Proxy, slots []*models.Slot) {
 	}
 }
 
-func OnlineProxy(p *proxy.Proxy, dashboard string) bool {
+func IsOnlineProxy(p *proxy.Proxy, dashboard string) bool {
 	client := topom.NewApiClient(dashboard)
 	t, err := client.Model()
 	if err != nil {

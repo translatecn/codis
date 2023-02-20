@@ -106,7 +106,7 @@ func (s *Topom) SwitchMasters(masters map[int]string) error {
 	return nil
 }
 
-func (s *Topom) rewatchSentinels(servers []string) {
+func (s *Topom) reWatchSentinels(servers []string) { // 重新监听所有哨兵节点
 	if s.ha.monitor != nil {
 		s.ha.monitor.Cancel()
 		s.ha.monitor = nil
@@ -117,10 +117,10 @@ func (s *Topom) rewatchSentinels(servers []string) {
 		s.ha.monitor = redis.NewSentinel(s.config.ProductName, s.config.ProductAuth)
 		s.ha.monitor.LogFunc = log.Warnf
 		s.ha.monitor.ErrFunc = log.WarnErrorf
-		go func(p *redis.Sentinel) {
+		go func(sentinel *redis.Sentinel) {
 			var trigger = make(chan struct{}, 1)
-			delayUntil := func(deadline time.Time) {
-				for !p.IsCanceled() {
+			delayUntil := func(deadline time.Time) { // 延迟函数
+				for !sentinel.IsCanceled() {
 					var d = deadline.Sub(time.Now())
 					if d <= 0 {
 						return
@@ -136,10 +136,10 @@ func (s *Topom) rewatchSentinels(servers []string) {
 					default:
 					}
 				}
-				for !p.IsCanceled() {
+				for !sentinel.IsCanceled() {
 					timeout := time.Minute * 15
 					retryAt := time.Now().Add(time.Second * 10)
-					if !p.Subscribe(servers, timeout, callback) {
+					if !sentinel.Subscribe(servers, timeout, callback) {
 						delayUntil(retryAt)
 					} else {
 						callback()
@@ -149,13 +149,13 @@ func (s *Topom) rewatchSentinels(servers []string) {
 			go func() {
 				for range trigger {
 					var success int
-					for i := 0; i != 10 && !p.IsCanceled() && success != 2; i++ {
+					for i := 0; i != 10 && !sentinel.IsCanceled() && success != 2; i++ {
 						timeout := time.Second * 5
-						masters, err := p.Masters(servers, timeout)
+						masters, err := sentinel.Masters(servers, timeout)
 						if err != nil {
 							log.WarnErrorf(err, "fetch group masters failed")
 						} else {
-							if !p.IsCanceled() {
+							if !sentinel.IsCanceled() {
 								s.SwitchMasters(masters)
 							}
 							success += 1
@@ -201,7 +201,7 @@ func (s *Topom) ResyncSentinels() error {
 		log.WarnErrorf(err, "resync sentinels failed")
 		return err
 	}
-	s.rewatchSentinels(p.Servers)
+	s.reWatchSentinels(p.Servers)
 
 	var fut sync2.Future
 	for _, p := range ctx.proxy {
