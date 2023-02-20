@@ -34,7 +34,7 @@ codis-server:
 	cp -f extern/redis/src/redis-benchmark bin/
 	cp -f extern/redis/src/redis-cli bin/
 	cp -f extern/redis/src/redis-sentinel bin/
-	cp -f extern/redis/src/redis.conf config/
+	cp -f extern/redis/redis.conf config/
 	sed -e "s/^sentinel/# sentinel/g" extern/redis/sentinel.conf > config/sentinel.conf
 
 clean-gotest:

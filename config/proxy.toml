@@ -45,33 +45,32 @@ jodis_auth = ""
 jodis_timeout = "20s"
 jodis_compatible = false
 
-# Set datacenter of proxy.
 proxy_datacenter = ""
 
-# Set max number of alive sessions.
+# 存活的会话数量[上限]
 proxy_max_clients = 1000
 
-# Set max offheap memory size. (0 to disable)
+# 设置最大堆外内存大小.(0禁用)
 proxy_max_offheap_size = "1024mb"
 
-# Set heap placeholder to reduce GC frequency.
+# 设置堆占位符以减少GC频率.
 proxy_heap_placeholder = "256mb"
 
-# Proxy will ping backend redis (and clear 'MASTERDOWN' state) in a predefined interval. (0 to disable)
+# proxy会主动ping后端的redis服务器,更新状态
 backend_ping_period = "5s"
 
-# Set backend recv buffer size & timeout.
+# 设置后端接收缓冲区大小和超时时间
 backend_recv_bufsize = "128kb"
 backend_recv_timeout = "30s"
 
-# Set backend send buffer & timeout.
+# 设置后端发送缓冲区大小和超时时间
 backend_send_bufsize = "128kb"
 backend_send_timeout = "30s"
 
-# Set backend pipeline buffer size.
+# 设置后端pipeline缓冲区大小
 backend_max_pipeline = 20480
 
-# Set backend never read replica groups, default is false
+# 设置后端不读取副本组，默认为false [即会读取slave]
 backend_primary_only = false
 
 # 为每个服务器设置后端并行连接
@@ -84,8 +83,7 @@ backend_keepalive_period = "75s"
 # 设置后端数据库数量
 backend_number_databases = 16
 
-# If there is no request from client for a long time, the connection will be closed. (0 to disable)
-# Set session recv buffer size & timeout.
+# 如果客户端长时间没有请求，连接将被关闭.(0 to disable)设置会话recv缓冲区大小和超时时间.
 session_recv_bufsize = "128kb"
 session_recv_timeout = "30m"
 
@@ -93,8 +91,8 @@ session_recv_timeout = "30m"
 session_send_bufsize = "64kb"
 session_send_timeout = "30s"
 
-# Make sure this is higher than the max number of requests for each pipeline request, or your client may be blocked.
-# Set session pipeline buffer size.
+# 确保这高于每个管道请求的最大请求数，否则您的客户端可能会被阻塞.
+# 设置会话管道缓冲区大小.
 session_max_pipeline = 10000
 
 # 设置会话tcp保持时间.(0禁用)
@@ -103,7 +101,7 @@ session_keepalive_period = "75s"
 # 设置会话对失败敏感.默认为false，代理将向客户端发送错误响应，而不是关闭套接字.
 session_break_on_failure = false
 
-# Set metrics server (such as http://localhost:28000), proxy will report json formatted metrics to specified server in a predefined period.
+# 指标服务器 (such as http://localhost:28000), 代理将报告json格式的指标到指定的服务器在预定义的时期.
 metrics_report_server = ""
 metrics_report_period = "1s"
 
