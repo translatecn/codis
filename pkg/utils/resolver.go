@@ -4,6 +4,7 @@
 package utils
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"strconv"
@@ -61,6 +62,7 @@ var (
 )
 
 func init() {
+	fmt.Println("pkg/utils/resolver.go:65")
 	if ipAddrs := LookupIPTimeout(Hostname, 30*time.Millisecond); len(ipAddrs) != 0 {
 		for _, ip := range ipAddrs {
 			if ip.IsGlobalUnicast() {

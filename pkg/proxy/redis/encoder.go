@@ -5,6 +5,7 @@ package redis
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"strconv"
 
@@ -23,6 +24,7 @@ var (
 )
 
 func init() {
+	fmt.Println("pkg/proxy/redis/encoder.go:27")
 	var b bytes.Buffer
 	for i := range itoaOffset {
 		itoaOffset[i] = uint32(b.Len())

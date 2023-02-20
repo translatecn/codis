@@ -13,6 +13,7 @@ import (
 )
 
 func init() {
+	fmt.Println("pkg/models/store.go:16")
 	if filepath.Separator != '/' {
 		log.Panicf("bad Separator = '%c', must be '/'", filepath.Separator)
 	}

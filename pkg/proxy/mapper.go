@@ -5,6 +5,7 @@ package proxy
 
 import (
 	"bytes"
+	"fmt"
 	"hash/crc32"
 	"strings"
 
@@ -15,6 +16,7 @@ import (
 var charmap [256]byte
 
 func init() {
+	fmt.Println("pkg/proxy/mapper.go:19")
 	for i := range charmap {
 		c := byte(i)
 		switch {
@@ -59,6 +61,7 @@ const (
 var opTable = make(map[string]OpInfo, 256)
 
 func init() {
+	fmt.Println("pkg/proxy/mapper.go:63")
 	for _, i := range []OpInfo{
 		{"APPEND", FlagWrite},
 		{"ASKING", FlagNotAllow},

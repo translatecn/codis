@@ -81,3 +81,26 @@ Codis is licensed under MIT， see MIT-LICENSE.txt
 
 -------------
 *You are welcome to use Codis in your product, and feel free to let us know~ :)*
+
+## 参考资料
+- Codis作者谈codis:
+https://dbaplus.cn/news-141-270-1.html
+- codis配置参考
+https://www.jianshu.com/p/4902eec92002
+- codis原理细节最佳文档
+https://www.51cto.com/article/595255.html
+
+## 阅读源码参考文档
+- Sentinel模块
+https://cloud.tencent.com/developer/article/1767297
+- Proxy初始化
+https://cloud.tencent.com/developer/article/1752972
+- Proxy如何处理请求
+https://cloud.tencent.com/developer/article/1752737
+- slot迁移
+https://cloud.tencent.com/developer/article/1760069
+https://cloud.tencent.com/developer/article/1767296
+- codis源码分析
+https://blog.csdn.net/antony9118/category_7045910.html
+- 故障转移实践
+https://blog.csdn.net/yabingshi_tech/article/details/107835459

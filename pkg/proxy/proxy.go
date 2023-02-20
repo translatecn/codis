@@ -39,18 +39,18 @@ type Proxy struct {
 	closed bool
 
 	config *Config
-	router *Router
+	router *Router // 路由消息
 	ignore []byte
 
-	lproxy net.Listener
-	ladmin net.Listener
+	lproxy net.Listener // 处理redis业务请求
+	ladmin net.Listener // 处理dashboard进程消息
 
-	ha struct {
+	ha struct { // 订阅sentinel信息，感知消息切主信息
 		monitor *redis.Sentinel
 		masters map[int]string
 		servers []string
 	}
-	jodis *Jodis
+	jodis *Jodis // 把自己的ip,port写入storage,以供外部业务通过consule发现。
 }
 
 var ErrClosedProxy = errors.New("use of closed proxy")

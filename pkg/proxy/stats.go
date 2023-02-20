@@ -4,6 +4,7 @@
 package proxy
 
 import (
+	"fmt"
 	"math"
 	"sort"
 	"sync"
@@ -61,6 +62,7 @@ var cmdstats struct {
 }
 
 func init() {
+	fmt.Println("pkg/proxy/stats.go:65")
 	cmdstats.opmap = make(map[string]*opStats, 128)
 	go func() {
 		for {
@@ -198,6 +200,7 @@ type SysUsage struct {
 var lastSysUsage atomic.Value
 
 func init() {
+	fmt.Println("pkg/proxy/stats.go:202")
 	go func() {
 		for {
 			cpu, usage, err := utils.CPUUsage(time.Second)

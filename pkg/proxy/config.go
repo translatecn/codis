@@ -26,10 +26,8 @@ product_name = "codis-demo"
 product_auth = ""
 
 # Set auth for client session
-#   1. product_auth is used for auth validation among codis-dashboard,
-#      codis-proxy and codis-server.
-#   2. session_auth is different from product_auth, it requires clients
-#      to issue AUTH <PASSWORD> before processing any other commands.
+#   1. product_auth用于codis-dashboard、codis-proxy和codis-server之间的身份验证。
+#   2. session_auth与product_auth不同，它需要客户端运行AUTH <PASSWORD> 在处理任何其他命令之前。
 session_auth = ""
 
 # Set bind address for admin(rpc), tcp only.
@@ -83,14 +81,14 @@ backend_max_pipeline = 20480
 # Set backend never read replica groups, default is false
 backend_primary_only = false
 
-# Set backend parallel connections per server
+# 为每个服务器设置后端并行连接
 backend_primary_parallel = 1
 backend_replica_parallel = 1
 
-# Set backend tcp keepalive period. (0 to disable)
+# 设置后端tcp保活时间。(0禁用)
 backend_keepalive_period = "75s"
 
-# Set number of databases of backend.
+# 设置后端数据库数量
 backend_number_databases = 16
 
 # If there is no request from client for a long time, the connection will be closed. (0 to disable)
@@ -98,7 +96,7 @@ backend_number_databases = 16
 session_recv_bufsize = "128kb"
 session_recv_timeout = "30m"
 
-# Set session send buffer size & timeout.
+# 设置会话发送缓冲区大小和超时时间。
 session_send_bufsize = "64kb"
 session_send_timeout = "30s"
 
@@ -106,24 +104,24 @@ session_send_timeout = "30s"
 # Set session pipeline buffer size.
 session_max_pipeline = 10000
 
-# Set session tcp keepalive period. (0 to disable)
+# 设置会话tcp保持时间。(0禁用)
 session_keepalive_period = "75s"
 
-# Set session to be sensitive to failures. Default is false, instead of closing socket, proxy will send an error response to client.
+# 设置会话对失败敏感。默认为false，代理将向客户端发送错误响应，而不是关闭套接字。
 session_break_on_failure = false
 
 # Set metrics server (such as http://localhost:28000), proxy will report json formatted metrics to specified server in a predefined period.
 metrics_report_server = ""
 metrics_report_period = "1s"
 
-# Set influxdb server (such as http://localhost:8086), proxy will report metrics to influxdb.
+# 设置influxdb服务器(如http://localhost:8086)，代理将向influxdb报告指标。
 metrics_report_influxdb_server = ""
 metrics_report_influxdb_period = "1s"
 metrics_report_influxdb_username = ""
 metrics_report_influxdb_password = ""
 metrics_report_influxdb_database = ""
 
-# Set statsd server (such as localhost:8125), proxy will report metrics to statsd.
+# 设置statsd服务器(如localhost:8125)，代理将向statsd报告指标。
 metrics_report_statsd_server = ""
 metrics_report_statsd_period = "1s"
 metrics_report_statsd_prefix = ""
