@@ -29,7 +29,6 @@ codis-fe: codis-deps
 codis-server:
 	mkdir -p bin
 	rm -f bin/codis-server*
-	rm -rf extern/* && cd extern && git clone -b cn https://github.com/translatecn/redis.git && cd -
 	make -j4 -C extern/redis/
 	cp -f extern/redis/src/redis-server  bin/codis-server
 	cp -f extern/redis/src/redis-benchmark bin/
