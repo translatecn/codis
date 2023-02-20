@@ -26,17 +26,15 @@ import (
 )
 
 type Topom struct {
-	mu sync.Mutex
-
-	xauth string
+	mu    sync.Mutex
+	xauth string // product_name 的 sha256 哈希值
 	model *models.Topom
 	store *models.Store
 	cache struct {
-		hooks list.List
-		slots []*models.SlotMapping
-		group map[int]*models.Group
-		proxy map[string]*models.Proxy
-
+		hooks    list.List
+		slots    []*models.SlotMapping
+		group    map[int]*models.Group
+		proxy    map[string]*models.Proxy
 		sentinel *models.Sentinel
 	}
 
@@ -47,15 +45,11 @@ type Topom struct {
 	config *Config
 	online bool
 	closed bool
-
 	ladmin net.Listener
-
 	action struct {
-		redisp *redis.Pool
-
+		redisp   *redis.Pool
 		interval atomic2.Int64
 		disabled atomic2.Bool
-
 		progress struct {
 			status atomic.Value
 		}
@@ -63,15 +57,13 @@ type Topom struct {
 	}
 
 	stats struct {
-		redisp *redis.Pool
-
+		redisp  *redis.Pool
 		servers map[string]*RedisStats
 		proxies map[string]*ProxyStats
 	}
 
 	ha struct {
-		redisp *redis.Pool
-
+		redisp  *redis.Pool
 		monitor *redis.Sentinel
 		masters map[int]string
 	}
@@ -204,7 +196,7 @@ func (s *Topom) Start(routines bool) error {
 	go func() {
 		for !s.IsClosed() {
 			if s.IsOnline() {
-				w, _ := s.RefreshRedisStats(time.Second)
+				w, _ := s.RefreshRedisStats(time.Second) // ✅ 刷新集群的信息
 				if w != nil {
 					w.Wait()
 				}

@@ -46,7 +46,7 @@ func (s *Topom) newRedisStats(addr string, timeout time.Duration, do func(addr s
 	}
 }
 
-func (s *Topom) RefreshRedisStats(timeout time.Duration) (*sync2.Future, error) {
+func (s *Topom) RefreshRedisStats(timeout time.Duration) (*sync2.Future, error) { // 刷新redis状态
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	ctx, err := s.newContext()
@@ -62,10 +62,11 @@ func (s *Topom) RefreshRedisStats(timeout time.Duration) (*sync2.Future, error) 
 			fut.Done(addr, stats)
 		}()
 	}
+	// 针对每一个 group 内的所有机器进行探测
 	for _, g := range ctx.group {
 		for _, x := range g.Servers {
 			goStats(x.Addr, func(addr string) (*RedisStats, error) {
-				m, err := s.stats.redisp.InfoFull(addr)
+				m, err := s.stats.redisp.InfoFull(addr) // 获取地址信息
 				if err != nil {
 					return nil, err
 				}
@@ -79,16 +80,17 @@ func (s *Topom) RefreshRedisStats(timeout time.Duration) (*sync2.Future, error) 
 			if err != nil {
 				return nil, err
 			}
-			defer s.ha.redisp.PutClient(c)
+			defer s.ha.redisp.PutBackClient(c)
 			m, err := c.Info()
 			if err != nil {
 				return nil, err
 			}
 			sentinel := redis.NewSentinel(s.config.ProductName, s.config.ProductAuth)
-			p, err := sentinel.MastersAndSlavesClient(c)
+			p, err := sentinel.MastersAndSlavesClient(c) // ✅
 			if err != nil {
 				return nil, err
 			}
+			// 哨兵节点状态，以及保存的所有master和slave
 			return &RedisStats{Stats: m, Sentinel: p}, nil
 		})
 	}
@@ -112,13 +114,13 @@ type ProxyStats struct {
 	Timeout  bool  `json:"timeout,omitempty"`
 }
 
-func (s *Topom) newProxyStats(p *models.Proxy, timeout time.Duration) *ProxyStats {
+func (s *Topom) getProxyStats(p *models.Proxy, timeout time.Duration) *ProxyStats {
 	var ch = make(chan struct{})
 	stats := &ProxyStats{}
 
 	go func() {
 		defer close(ch)
-		x, err := s.newProxyClient(p).StatsSimple()
+		x, err := s.newProxyClient(p).StatsSimple() // http请求         dashboard->proxy
 		if err != nil {
 			stats.Error = rpc.NewRemoteError(err)
 		} else {
@@ -145,7 +147,7 @@ func (s *Topom) RefreshProxyStats(timeout time.Duration) (*sync2.Future, error) 
 	for _, p := range ctx.proxy {
 		fut.Add()
 		go func(p *models.Proxy) {
-			stats := s.newProxyStats(p, timeout)
+			stats := s.getProxyStats(p, timeout)
 			stats.UnixTime = time.Now().Unix()
 			fut.Done(p.Token, stats)
 

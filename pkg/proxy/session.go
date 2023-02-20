@@ -243,7 +243,7 @@ func (s *Session) loopWriter(tasks *RequestChan) (err error) {
 func (s *Session) handleResponse(r *Request) (*redis.Resp, error) {
 	r.Batch.Wait()
 	if r.Coalesce != nil {
-		// 聚合读取结果，假设一个请求比如MGet， 分布在不同的redis实例上，需要聚合。
+		// 聚合读取结果，假设一个请求比如MGet， 分布在不同的redis实例上，需要聚合.
 		if err := r.Coalesce(); err != nil {
 			return nil, err
 		}

@@ -53,25 +53,25 @@ func (s *Topom) refillCache() error {
 		e := s.cache.hooks.Front()
 		s.cache.hooks.Remove(e).(func())()
 	}
-	if slots, err := s.refillCacheSlots(s.cache.slots); err != nil {
+	if slots, err := s.refillCacheSlots(s.cache.slots); err != nil { // 初始化、更新槽信息
 		log.ErrorErrorf(err, "store: load slots failed")
 		return errors.Errorf("store: load slots failed")
 	} else {
 		s.cache.slots = slots
 	}
-	if group, err := s.refillCacheGroup(s.cache.group); err != nil {
+	if group, err := s.refillCacheGroup(s.cache.group); err != nil { // 初始化、更新分组信息
 		log.ErrorErrorf(err, "store: load group failed")
 		return errors.Errorf("store: load group failed")
 	} else {
 		s.cache.group = group
 	}
-	if proxy, err := s.refillCacheProxy(s.cache.proxy); err != nil {
+	if proxy, err := s.refillCacheProxy(s.cache.proxy); err != nil { // 初始化、更新 proxy 信息
 		log.ErrorErrorf(err, "store: load proxy failed")
 		return errors.Errorf("store: load proxy failed")
 	} else {
 		s.cache.proxy = proxy
 	}
-	if sentinel, err := s.refillCacheSentinel(s.cache.sentinel); err != nil {
+	if sentinel, err := s.refillCacheSentinel(s.cache.sentinel); err != nil { // 初始化、更新 哨兵节点 信息
 		log.ErrorErrorf(err, "store: load sentinel failed")
 		return errors.Errorf("store: load sentinel failed")
 	} else {
@@ -82,8 +82,9 @@ func (s *Topom) refillCache() error {
 
 func (s *Topom) refillCacheSlots(slots []*models.SlotMapping) ([]*models.SlotMapping, error) {
 	if slots == nil {
-		return s.store.SlotMappings()
+		return s.store.SlotMappings() // 初始化 slots 槽信息
 	}
+	// 根据slot id 更新对应信息
 	for i, _ := range slots {
 		if slots[i] != nil {
 			continue

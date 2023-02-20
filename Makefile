@@ -42,12 +42,9 @@ clean-gotest:
 	rm -rf ./pkg/topom/gotest.tmp
 
 clean: clean-gotest
-	rm -rf bin
+	cd example && make clean && cd -
+	rm -rf bin rootfs
 	rm -rf scripts/tmp
-
-distclean: clean
-	make --no-print-directory --quiet distclean
-	make --no-print-directory --quiet distclean
 
 gotest: codis-deps
 	go test ./cmd/... ./pkg/...

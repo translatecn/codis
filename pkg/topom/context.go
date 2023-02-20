@@ -18,13 +18,11 @@ import (
 const MaxSlotNum = models.MaxSlotNum
 
 type context struct {
-	slots []*models.SlotMapping
-	group map[int]*models.Group
-	proxy map[string]*models.Proxy
-
+	slots    []*models.SlotMapping
+	group    map[int]*models.Group
+	proxy    map[string]*models.Proxy
 	sentinel *models.Sentinel
-
-	hosts struct {
+	hosts    struct {
 		sync.Mutex
 		m map[string]net.IP
 	}

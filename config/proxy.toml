@@ -19,8 +19,8 @@ product_name = "codis-demo"
 product_auth = ""
 
 # Set auth for client session
-#   1. product_auth用于codis-dashboard、codis-proxy和codis-server之间的身份验证。
-#   2. session_auth与product_auth不同，它需要客户端运行AUTH <PASSWORD> 在处理任何其他命令之前。
+#   1. product_auth用于codis-dashboard、codis-proxy和codis-server之间的身份验证.
+#   2. session_auth与product_auth不同，它需要客户端运行AUTH <PASSWORD> 在处理任何其他命令之前.
 session_auth = ""
 
 # Set bind address for admin(rpc), tcp only.
@@ -78,7 +78,7 @@ backend_primary_only = false
 backend_primary_parallel = 1
 backend_replica_parallel = 1
 
-# 设置后端tcp保活时间。(0禁用)
+# 设置后端tcp保活时间.(0禁用)
 backend_keepalive_period = "75s"
 
 # 设置后端数据库数量
@@ -89,7 +89,7 @@ backend_number_databases = 16
 session_recv_bufsize = "128kb"
 session_recv_timeout = "30m"
 
-# 设置会话发送缓冲区大小和超时时间。
+# 设置会话发送缓冲区大小和超时时间.
 session_send_bufsize = "64kb"
 session_send_timeout = "30s"
 
@@ -97,24 +97,24 @@ session_send_timeout = "30s"
 # Set session pipeline buffer size.
 session_max_pipeline = 10000
 
-# 设置会话tcp保持时间。(0禁用)
+# 设置会话tcp保持时间.(0禁用)
 session_keepalive_period = "75s"
 
-# 设置会话对失败敏感。默认为false，代理将向客户端发送错误响应，而不是关闭套接字。
+# 设置会话对失败敏感.默认为false，代理将向客户端发送错误响应，而不是关闭套接字.
 session_break_on_failure = false
 
 # Set metrics server (such as http://localhost:28000), proxy will report json formatted metrics to specified server in a predefined period.
 metrics_report_server = ""
 metrics_report_period = "1s"
 
-# 设置influxdb服务器(如http://localhost:8086)，代理将向influxdb报告指标。
+# 设置influxdb服务器(如http://localhost:8086)，代理将向influxdb报告指标.
 metrics_report_influxdb_server = ""
 metrics_report_influxdb_period = "1s"
 metrics_report_influxdb_username = ""
 metrics_report_influxdb_password = ""
 metrics_report_influxdb_database = ""
 
-# 设置statsd服务器(如localhost:8125)，代理将向statsd报告指标。
+# 设置statsd服务器(如localhost:8125)，代理将向statsd报告指标.
 metrics_report_statsd_server = ""
 metrics_report_statsd_period = "1s"
 metrics_report_statsd_prefix = ""

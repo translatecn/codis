@@ -106,7 +106,7 @@ func (s *Topom) SwitchMasters(masters map[int]string) error {
 	return nil
 }
 
-func (s *Topom) rewatchSentinels(servers []string) {
+func (s *Topom) rewatchSentinels(servers []string) { // 重新监听所有哨兵节点
 	if s.ha.monitor != nil {
 		s.ha.monitor.Cancel()
 		s.ha.monitor = nil

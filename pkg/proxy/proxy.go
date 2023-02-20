@@ -50,7 +50,7 @@ type Proxy struct {
 		masters map[int]string
 		servers []string
 	}
-	jodis *Jodis // 把自己的ip,port写入storage,以供外部业务通过consule发现。
+	jodis *Jodis // 把自己的ip,port写入storage,以供外部业务通过consule发现.
 }
 
 var ErrClosedProxy = errors.New("use of closed proxy")

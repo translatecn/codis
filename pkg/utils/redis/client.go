@@ -415,7 +415,7 @@ func (p *Pool) getClientFromCache(addr string) (*Client, error) {
 	return nil, nil
 }
 
-func (p *Pool) PutClient(c *Client) {
+func (p *Pool) PutBackClient(c *Client) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if !c.isRecyclable() || p.closed {
@@ -435,16 +435,16 @@ func (p *Pool) Info(addr string) (_ map[string]string, err error) {
 	if err != nil {
 		return nil, err
 	}
-	defer p.PutClient(c)
+	defer p.PutBackClient(c)
 	return c.Info()
 }
 
-func (p *Pool) InfoFull(addr string) (_ map[string]string, err error) {
+func (p *Pool) InfoFull(addr string) (_ map[string]string, err error) { // 获取全部信息
 	c, err := p.GetClient(addr)
 	if err != nil {
 		return nil, err
 	}
-	defer p.PutClient(c)
+	defer p.PutBackClient(c)
 	return c.InfoFull()
 }
 

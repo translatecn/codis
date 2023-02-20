@@ -360,7 +360,7 @@ func (bc *BackendConn) loopWriter(round int) (err error) {
 		if err := p.EncodeMultiBulk(r.Multi); err != nil {
 			return bc.setResponse(r, nil, fmt.Errorf("backend conn failure, %s", err))
 		}
-		// flush王法。发送给redis实例
+		// flush王法.发送给redis实例
 		if err := p.Flush(len(bc.input) == 0); err != nil {
 			return bc.setResponse(r, nil, fmt.Errorf("backend conn failure, %s", err))
 		} else {

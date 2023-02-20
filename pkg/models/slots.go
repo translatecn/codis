@@ -38,10 +38,9 @@ func ParseForwardMethod(s string) (int, bool) {
 }
 
 type SlotMapping struct {
-	Id      int `json:"id"`
-	GroupId int `json:"group_id"`
-
-	Action struct {
+	Id      int `json:"id"`       // 槽ID
+	GroupId int `json:"group_id"` // group ID
+	Action  struct {
 		Index    int    `json:"index,omitempty"`
 		State    string `json:"state,omitempty"`
 		TargetId int    `json:"target_id,omitempty"`

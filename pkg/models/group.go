@@ -6,9 +6,8 @@ package models
 const MaxGroupId = 9999
 
 type Group struct {
-	Id      int            `json:"id"`
-	Servers []*GroupServer `json:"servers"`
-
+	Id        int            `json:"id"`      // 槽ID
+	Servers   []*GroupServer `json:"servers"` // 主从结构中的节点
 	Promoting struct {
 		Index int    `json:"index,omitempty"`
 		State string `json:"state,omitempty"`

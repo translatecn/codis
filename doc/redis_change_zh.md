@@ -15,7 +15,7 @@
 
     缺省 = MAX\_SLOT\_NUM
 
-+ 返回结果：返回结果是 slotinfo 的 array；slotinfo 本身也是一个 array。
++ 返回结果：返回结果是 slotinfo 的 array；slotinfo 本身也是一个 array.
 
         response := []slotinfo{slot1, slot2, slot3, ...}
         slotinfo := []int{slotnum, slotsize}
@@ -71,7 +71,7 @@
 
 + 命令参数：接受至少 1 个 slotnum 作为参数
 
-+ 返回结果：格式参见 slotsinfo，不同的是：slotsize 表示删除后剩余大小，通常为 0。
++ 返回结果：格式参见 slotsinfo，不同的是：slotsize 表示删除后剩余大小，通常为 0.
 
 + 例如：
 
@@ -141,7 +141,7 @@
         response := []int{succ,size}
 
         其中：
-            INT succ : 表示迁移是否成功。
+            INT succ : 表示迁移是否成功.
                 0 表示当前 slot 已经空了（迁移成功个数=0）
                 1 表示迁移一个 key 成功，并从本地删除（迁移成功个数=1）
             INT size : 表示 slot 下剩余 key 的个数
@@ -194,7 +194,7 @@
 
     - 当 key 中包含合法 tag 时，命令会计算 tag 的 hash 值，并在 skiplist 中找到所有具有相同 hash 值的 key-value 对，原子的迁移到目标机，**复杂度为** ***O(log(n))***
 
-    - **备注：修改的 redis 中，会将所有含有 tag 的 key，组织在 skiplist 中，并按照 tag 的 hash 值进行排序。当对按照某一 tag 进行迁移数据时，实际操作会将所有具有相同 hash 值的 tag 所涉及到的所有 key 一起迁移。也就是说，真正迁移的数据可能包含更多的 key，但是这么设计会减少 tag 迁移过程对字符串的比较次数，显著提升性能。**
+    - **备注：修改的 redis 中，会将所有含有 tag 的 key，组织在 skiplist 中，并按照 tag 的 hash 值进行排序.当对按照某一 tag 进行迁移数据时，实际操作会将所有具有相同 hash 值的 tag 所涉及到的所有 key 一起迁移.也就是说，真正迁移的数据可能包含更多的 key，但是这么设计会减少 tag 迁移过程对字符串的比较次数，显著提升性能.**
 
 + 命令参数：参见 slotsmgrtone
 
@@ -203,7 +203,7 @@
         response := int(succ)
 
         其中：
-            INT succ : 表示成功迁移的 key 的个数。
+            INT succ : 表示成功迁移的 key 的个数.
 
 + 例如：
 
@@ -233,9 +233,9 @@
 
     - 可以对 restore 多个 key-value
 
-    - 过程是原子的。
+    - 过程是原子的.
 
-+ **备注：与 restore 不同的是，slotsrestore 只支持 replace，即一定** ***覆盖旧值*** **。如果旧值已经存在，那么只可能是 redis-slots 或者 proxy 的实现 bug，程序会通过 redisLog 打印一条冲突记录。**
++ **备注：与 restore 不同的是，slotsrestore 只支持 replace，即一定** ***覆盖旧值*** **.如果旧值已经存在，那么只可能是 redis-slots 或者 proxy 的实现 bug，程序会通过 redisLog 打印一条冲突记录.**
 
 #### 调试相关
 ---------------
