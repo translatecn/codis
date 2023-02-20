@@ -12,5 +12,6 @@
 /bin
 /tmp
 /pkg/utils/version.go
-
+.idea
+vendor/
 makefile
