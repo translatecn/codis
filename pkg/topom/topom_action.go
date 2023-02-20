@@ -104,13 +104,14 @@ func (s *Topom) processSlotAction(sid int) error {
 }
 
 func (s *Topom) ProcessSyncAction() error {
-	addr, err := s.SyncActionPrepare()
+	//同步操作之前的准备工作
+	addr, err := s.SyncActionPrepare() // ✅
 	if err != nil || addr == "" {
 		return err
 	}
 	log.Warnf("sync-[%s] process action", addr)
-
-	exec, err := s.newSyncActionExecutor(addr)
+	//执行同步操作
+	exec, err := s.newSyncActionExecutor(addr) // 重新设置 slave of
 	if err != nil || exec == nil {
 		return err
 	}

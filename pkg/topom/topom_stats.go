@@ -15,7 +15,7 @@ import (
 )
 
 type RedisStats struct {
-	Stats map[string]string `json:"stats,omitempty"`
+	Stats map[string]string `json:"stats,omitempty"` // 储存了集群中Redis服务器的各种信息和统计数值，详见redis的info命令
 	Error *rpc.RemoteError  `json:"error,omitempty"`
 
 	Sentinel map[string]*redis.SentinelGroup `json:"sentinel,omitempty"`
@@ -49,6 +49,7 @@ func (s *Topom) newRedisStats(addr string, timeout time.Duration, do func(addr s
 func (s *Topom) RefreshRedisStats(timeout time.Duration) (*sync2.Future, error) { // 刷新redis状态
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	//从缓存中读出slots，group，proxy，sentinel等信息封装在context struct中
 	ctx, err := s.newContext()
 	if err != nil {
 		return nil, err
@@ -59,14 +60,15 @@ func (s *Topom) RefreshRedisStats(timeout time.Duration) (*sync2.Future, error) 
 		go func() {
 			stats := s.newRedisStats(addr, timeout, do)
 			stats.UnixTime = time.Now().Unix()
+			// vmap中添加键为addr，值为RedisStats的map
 			fut.Done(addr, stats)
 		}()
 	}
-	// 针对每一个 group 内的所有机器进行探测
+	//遍历ctx中的group，再遍历每个group中的Server
 	for _, g := range ctx.group {
 		for _, x := range g.Servers {
 			goStats(x.Addr, func(addr string) (*RedisStats, error) {
-				m, err := s.stats.redisp.InfoFull(addr) // 获取地址信息
+				m, err := s.stats.redisp.InfoFull(addr) // 获取 info 信息
 				if err != nil {
 					return nil, err
 				}
@@ -74,12 +76,16 @@ func (s *Topom) RefreshRedisStats(timeout time.Duration) (*sync2.Future, error) 
 			})
 		}
 	}
+	//通过sentinel维护codis集群中每一组的主备关系
 	for _, server := range ctx.sentinel.Servers {
 		goStats(server, func(addr string) (*RedisStats, error) {
 			c, err := s.ha.redisp.GetClient(addr)
 			if err != nil {
 				return nil, err
 			}
+			//实际上就是将client加入到Pool的pool属性里面去，pool本质上就是map[String]*list.List
+			//键是client的addr,值是client本身
+			//如果client不存在，就新建一个空的list
 			defer s.ha.redisp.PutBackClient(c)
 			m, err := c.Info()
 			if err != nil {
@@ -155,7 +161,7 @@ func (s *Topom) RefreshProxyStats(timeout time.Duration) (*sync2.Future, error) 
 			case x == nil:
 			case x.Closed || x.Online:
 			default:
-				if err := s.OnlineProxy(p.AdminAddr); err != nil {
+				if err := s.OnlineProxy(p.AdminAddr); err != nil { // ✅
 					log.WarnErrorf(err, "auto online proxy-[%s] failed", p.Token)
 				}
 			}

@@ -344,6 +344,7 @@ func (s *Topom) GroupPromoteServer(gid int, addr string) error {
 	}
 }
 
+// 尝试触发选主
 func (s *Topom) trySwitchGroupMaster(gid int, master string, cache *redis.InfoCache) error {
 	ctx, err := s.newContext()
 	if err != nil {
@@ -530,7 +531,7 @@ func (s *Topom) SyncActionPrepare() (string, error) {
 
 	g.Servers[index].Action.Index = 0
 	g.Servers[index].Action.State = models.ActionSyncing
-	return addr, s.storeUpdateGroup(g)
+	return addr, s.storeUpdateGroup(g) // 这样下次就会从store中重新载入数据到cache
 }
 
 func (s *Topom) SyncActionComplete(addr string, failed bool) error {

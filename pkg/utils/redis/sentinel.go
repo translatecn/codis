@@ -83,7 +83,7 @@ func (s *Sentinel) do(sentinel string, timeout time.Duration,
 	return fn(c)
 }
 
-func (s *Sentinel) dispatch(ctx context.Context, sentinel string, timeout time.Duration,
+func (s *Sentinel) dispatchWarf(ctx context.Context, sentinel string, timeout time.Duration,
 	fn func(client *Client) error) error {
 	c, err := NewClientNoAuth(sentinel, timeout)
 	if err != nil {
@@ -105,12 +105,12 @@ func (s *Sentinel) dispatch(ctx context.Context, sentinel string, timeout time.D
 	}
 }
 
-func (s *Sentinel) subscribeCommand(client *Client, sentinel string,
-	onSubscribed func()) error {
+func (s *Sentinel) subscribeCommand(client *Client, sentinel string, onSubscribed func()) error {
 	defer func() {
 		client.Close()
 	}()
-	var channels = []interface{}{"+switch-master"}
+	var channels = []interface{}{"+switch-master"} // master 切换的通知消息
+	// +switch-master mymaster 192.168.79.152 6379 192.168.79.153 6379
 	go func() {
 		client.Send("SUBSCRIBE", channels...)
 		client.Flush()
@@ -158,9 +158,8 @@ func (s *Sentinel) subscribeCommand(client *Client, sentinel string,
 	}
 }
 
-func (s *Sentinel) subscribeDispatch(ctx context.Context, sentinel string, timeout time.Duration,
-	onSubscribed func()) (bool, error) {
-	var err = s.dispatch(ctx, sentinel, timeout, func(c *Client) error {
+func (s *Sentinel) subscribeDispatch(ctx context.Context, sentinel string, timeout time.Duration, onSubscribed func()) (bool, error) {
+	var err = s.dispatchWarf(ctx, sentinel, timeout, func(c *Client) error {
 		return s.subscribeCommand(c, sentinel, onSubscribed)
 	})
 	if err != nil {
@@ -174,6 +173,7 @@ func (s *Sentinel) subscribeDispatch(ctx context.Context, sentinel string, timeo
 	return true, nil
 }
 
+// Subscribe 重新互相监听
 func (s *Sentinel) Subscribe(sentinels []string, timeout time.Duration, onMajoritySubscribed func()) bool {
 	cntx, cancel := context.WithTimeout(s.Context, timeout)
 	defer cancel()
@@ -181,7 +181,7 @@ func (s *Sentinel) Subscribe(sentinels []string, timeout time.Duration, onMajori
 	timeout += time.Second * 5
 	results := make(chan bool, len(sentinels))
 
-	var majority = 1 + len(sentinels)/2
+	var majority = 1 + len(sentinels)/2 // 大多数
 
 	var subscribed atomic2.Int64
 	for i := range sentinels {
@@ -197,7 +197,7 @@ func (s *Sentinel) Subscribe(sentinels []string, timeout time.Duration, onMajori
 			results <- notified
 		}(sentinels[i])
 	}
-
+	// ToDo， 不太理解这块的逻辑
 	for alive := len(sentinels); ; alive-- {
 		if alive < majority {
 			if cntx.Err() == nil {
@@ -321,10 +321,11 @@ func (s *Sentinel) mastersCommand(client *Client) (map[int]map[string]string, er
 	return masters, nil
 }
 
+// ok
 func (s *Sentinel) mastersDispatch(ctx context.Context, sentinel string, timeout time.Duration) (map[int]*SentinelMaster, error) {
 	var masters = make(map[int]*SentinelMaster)
-	var err = s.dispatch(ctx, sentinel, timeout, func(c *Client) error {
-		p, err := s.mastersCommand(c)
+	var err = s.dispatchWarf(ctx, sentinel, timeout, func(c *Client) error {
+		p, err := s.mastersCommand(c) // 对钩
 		if err != nil {
 			return err
 		}
@@ -506,7 +507,7 @@ func (s *Sentinel) monitorGroupsCommand(client *Client, sentniel string, config 
 
 func (s *Sentinel) monitorGroupsDispatch(ctx context.Context, sentinel string, timeout time.Duration,
 	config *MonitorConfig, groups map[int]*net.TCPAddr) error {
-	var err = s.dispatch(ctx, sentinel, timeout, func(c *Client) error {
+	var err = s.dispatchWarf(ctx, sentinel, timeout, func(c *Client) error {
 		return s.monitorGroupsCommand(c, sentinel, config, groups)
 	})
 	if err != nil {
@@ -631,7 +632,7 @@ func (s *Sentinel) removeGroupsDispatch(ctx context.Context, sentinel string, ti
 	for gid := range groups {
 		names = append(names, s.NodeName(gid))
 	}
-	var err = s.dispatch(ctx, sentinel, timeout, func(c *Client) error {
+	var err = s.dispatchWarf(ctx, sentinel, timeout, func(c *Client) error {
 		return s.removeCommand(c, names)
 	})
 	if err != nil {
@@ -680,7 +681,7 @@ func (s *Sentinel) RemoveGroups(sentinels []string, timeout time.Duration, group
 }
 
 func (s *Sentinel) removeGroupsAllDispatch(ctx context.Context, sentinel string, timeout time.Duration) error {
-	var err = s.dispatch(ctx, sentinel, timeout, func(c *Client) error {
+	var err = s.dispatchWarf(ctx, sentinel, timeout, func(c *Client) error {
 		masters, err := s.mastersCommand(c)
 		if err != nil {
 			return err

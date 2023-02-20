@@ -5,11 +5,11 @@ package models
 
 type Proxy struct {
 	Id          int    `json:"id,omitempty"`
-	Token       string `json:"token"`
-	StartTime   string `json:"start_time"`
-	AdminAddr   string `json:"admin_addr"`
-	ProtoType   string `json:"proto_type"`
-	ProxyAddr   string `json:"proxy_addr"`
+	Token       string `json:"token"`      // 每个proxy有唯一的token
+	StartTime   string `json:"start_time"` //
+	AdminAddr   string `json:"admin_addr"` // 用于接收来自dashboard的命令
+	ProtoType   string `json:"proto_type"` // 协议类型，,tcp,udp。。。
+	ProxyAddr   string `json:"proxy_addr"` // 用于接收来自dashboard的命令
 	JodisPath   string `json:"jodis_path,omitempty"`
 	ProductName string `json:"product_name"`
 	Pid         int    `json:"pid"`

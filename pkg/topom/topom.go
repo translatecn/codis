@@ -53,15 +53,15 @@ type Topom struct {
 		progress struct {
 			status atomic.Value
 		}
-		executor atomic2.Int64
+		executor atomic2.Int64 // 一个计数器，有一个slot等待迁移，就加一；执行一个slot的迁移，就减一
 	}
-
+	// 存储集群中redis和proxy详细信息，goroutine每次刷新redis和proxy之后，都会将结果存在这里
 	stats struct {
 		redisp  *redis.Pool
 		servers map[string]*RedisStats
 		proxies map[string]*ProxyStats
 	}
-
+	// 这个在使用哨兵的时候会用到, 存储在fe中配置的哨兵以及哨兵所监控的redis主服务器
 	ha struct {
 		redisp  *redis.Pool
 		monitor *redis.Sentinel
@@ -191,7 +191,7 @@ func (s *Topom) Start(routines bool) error {
 	if err != nil {
 		return err
 	}
-	s.rewatchSentinels(ctx.sentinel.Servers)
+	s.reWatchSentinels(ctx.sentinel.Servers) // ✅ 触发group重新选主
 
 	go func() {
 		for !s.IsClosed() {
@@ -208,7 +208,7 @@ func (s *Topom) Start(routines bool) error {
 	go func() {
 		for !s.IsClosed() {
 			if s.IsOnline() {
-				w, _ := s.RefreshProxyStats(time.Second)
+				w, _ := s.RefreshProxyStats(time.Second) // ✅ 刷新proxy的信息
 				if w != nil {
 					w.Wait()
 				}
@@ -232,7 +232,7 @@ func (s *Topom) Start(routines bool) error {
 	go func() {
 		for !s.IsClosed() {
 			if s.IsOnline() {
-				if err := s.ProcessSyncAction(); err != nil {
+				if err := s.ProcessSyncAction(); err != nil { // ✅
 					log.WarnErrorf(err, "process sync action failed")
 					time.Sleep(time.Second * 5)
 				}

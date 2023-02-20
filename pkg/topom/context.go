@@ -216,6 +216,7 @@ func (ctx *context) minSyncActionIndex() string {
 	for _, g := range ctx.group {
 		for _, x := range g.Servers {
 			if x.Action.State == models.ActionPending {
+				// 选出Action.Index最小的那台服务器
 				if d == nil || x.Action.Index < d.Action.Index {
 					d = x
 				}
