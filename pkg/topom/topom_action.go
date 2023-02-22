@@ -14,7 +14,7 @@ import (
 	"github.com/CodisLabs/codis/pkg/utils/sync2"
 )
 
-func (s *Topom) ProcessSlotAction() error {
+func (s *Topom) ProcessSlotAction() error { // 更新solt相应的数据
 	for s.IsOnline() {
 		var (
 			marks = make(map[int]bool)
@@ -39,6 +39,7 @@ func (s *Topom) ProcessSlotAction() error {
 		}
 		var parallel = math2.MaxInt(1, s.config.MigrationParallelSlots)
 		for parallel > len(plans) {
+			//状态转移在这里完成
 			_, ok, err := s.SlotActionPrepareFilter(accept, update)
 			if err != nil {
 				return err
@@ -46,6 +47,7 @@ func (s *Topom) ProcessSlotAction() error {
 				break
 			}
 		}
+		// ActionPending =》ActionPreparing =》ActionPrepared  => ActionMigrating => ActionFinished
 		if len(plans) == 0 {
 			return nil
 		}
@@ -54,6 +56,7 @@ func (s *Topom) ProcessSlotAction() error {
 			fut.Add()
 			go func(sid int) {
 				log.Warnf("slot-[%d] process action", sid)
+				//重点，真正的数据迁移
 				var err = s.processSlotAction(sid)
 				if err != nil {
 					status := fmt.Sprintf("[ERROR] Slot[%04d]: %s", sid, err)
@@ -87,7 +90,7 @@ func (s *Topom) processSlotAction(sid int) error {
 				return err
 			}
 			log.Debugf("slot-[%d] action executor %d", sid, n)
-
+			//迁移完成判断
 			if n == 0 && nextdb == -1 {
 				return s.SlotActionComplete(sid)
 			}

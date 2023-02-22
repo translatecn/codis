@@ -49,6 +49,7 @@ func (d *forwardSync) process(s *Slot, r *Request, hkey []byte) (*BackendConn, e
 			s.id, hkey)
 		return nil, ErrSlotIsNotReady
 	}
+	//如果正在迁移，查询这个key是否迁移完成
 	if s.migrate.bc != nil && len(hkey) != 0 {
 		if err := d.slotsmgrt(s, hkey, r.Database, r.Seed16()); err != nil {
 			log.Debugf("slot-%04d migrate from = %s to %s failed: hash key = '%s', database = %d, error = %s",

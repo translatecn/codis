@@ -1262,6 +1262,7 @@ slotsmgrtExecWrapperCommand(client *c) {
         addReplyError(c, "wrong number of arguments for SLOTSMGRT-EXEC-WRAPPER");
         return;
     }
+    //   //查找命令是否存在
     struct redisCommand *cmd = lookupCommand(c->argv[2]->ptr);
     if (cmd == NULL) {
         addReplyLongLong(c, -1);
@@ -1269,6 +1270,7 @@ slotsmgrtExecWrapperCommand(client *c) {
                 (char *)c->argv[2]->ptr);
         return;
     }
+
     if ((cmd->arity > 0 && cmd->arity != c->argc - 2) || (c->argc - 2 < -cmd->arity)) {
         addReplyLongLong(c, -1);
         addReplyErrorFormat(c, "wrong number of arguments for command (%s)",
@@ -1280,6 +1282,7 @@ slotsmgrtExecWrapperCommand(client *c) {
         addReplyError(c, "the specified key doesn't exist");
         return;
     }
+     //如果正在迁移并且当前命令是写命令则返回错误
     if (!(cmd->flags & CMD_READONLY) && getSlotsmgrtAsyncClientMigrationStatusOrBlock(c, c->argv[1], 0) != 0) {
         addReplyLongLong(c, 1);
         addReplyError(c, "the specified key is being migrated");

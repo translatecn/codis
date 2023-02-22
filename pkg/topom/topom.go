@@ -232,7 +232,7 @@ func (s *Topom) Start(routines bool) error {
 	go func() {
 		for !s.IsClosed() {
 			if s.IsOnline() {
-				if err := s.ProcessSyncAction(); err != nil { // ✅
+				if err := s.ProcessSyncAction(); err != nil { // ✅ 同步，选主
 					log.WarnErrorf(err, "process sync action failed")
 					time.Sleep(time.Second * 5)
 				}

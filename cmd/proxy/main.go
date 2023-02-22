@@ -218,11 +218,11 @@ Options:
 
 	switch {
 	case dashboard != "":
-		go AutoOnlineWithDashboard(s, dashboard)
+		go AutoOnlineWithDashboard(s, dashboard) // 自动上线到dashboard
 	case coordinator.name != "":
-		go AutoOnlineWithCoordinator(s, coordinator.name, coordinator.addr, coordinator.auth)
+		go AutoOnlineWithCoordinator(s, coordinator.name, coordinator.addr, coordinator.auth) // 自动注册到etcd 等...
 	case slots != nil:
-		go AutoOnlineWithFillSlots(s, slots)
+		go AutoOnlineWithFillSlots(s, slots) //
 	}
 
 	for !s.IsClosed() && !s.IsOnline() {

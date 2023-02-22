@@ -340,7 +340,7 @@ func (s *Proxy) rewatchSentinels(servers []string) {
 				for !p.IsCanceled() {
 					timeout := time.Minute * 15
 					retryAt := time.Now().Add(time.Second * 10)
-					if !p.Subscribe(servers, timeout, callback) { // ✅
+					if !p.Subscribe(servers, timeout, callback) { // ✅ 订阅切主信息
 						delayUntil(retryAt)
 					} else {
 						callback()
@@ -352,11 +352,13 @@ func (s *Proxy) rewatchSentinels(servers []string) {
 					var success int
 					for i := 0; i != 10 && !p.IsCanceled() && success != 2; i++ {
 						timeout := time.Second * 5
+						// 得到最新的Master
 						masters, err := p.Masters(servers, timeout)
 						if err != nil {
 							log.WarnErrorf(err, "[%p] fetch group masters failed", s)
 						} else {
 							if !p.IsCanceled() {
+								//切主
 								s.SwitchMasters(masters)
 							}
 							success += 1

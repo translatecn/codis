@@ -194,19 +194,23 @@ func (s *Topom) ResyncSentinels() error {
 	}
 
 	sentinel := redis.NewSentinel(s.config.ProductName, s.config.ProductAuth)
+	//移除所有Master
 	if err := sentinel.RemoveGroupsAll(p.Servers, s.config.SentinelClientTimeout.Duration()); err != nil {
 		log.WarnErrorf(err, "remove sentinels failed")
 	}
+	//监听Group
 	if err := sentinel.MonitorGroups(p.Servers, s.config.SentinelClientTimeout.Duration(), config, ctx.getGroupMasters()); err != nil {
 		log.WarnErrorf(err, "resync sentinels failed")
 		return err
 	}
+	//设置Group Master
 	s.reWatchSentinels(p.Servers)
 
 	var fut sync2.Future
 	for _, p := range ctx.proxy {
 		fut.Add()
 		go func(p *models.Proxy) {
+			//通知Proxy更新
 			err := s.newProxyClient(p).SetSentinels(ctx.sentinel)
 			if err != nil {
 				log.ErrorErrorf(err, "proxy-[%s] resync sentinel failed", p.Token)

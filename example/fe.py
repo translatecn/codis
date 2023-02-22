@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 
-from utils import *
-
 import atexit
-import json
 import datetime
+import json
+
+from utils import *
 
 
 class CodisFE(Process):
@@ -16,7 +16,7 @@ class CodisFE(Process):
         self.command = "codis-fe --filesystem rootfs --listen 0.0.0.0:{} --assets-dir={}".format(self.port, assets)
         Process.__init__(self, self.command, self.logfile)
 
-        dict = {"pid": self.proc.pid, "assets": assets}
+        dict = {"pid": self.proc.pid, "assets": assets, "port": self.port}
         print("    >> codis.fe = " + json.dumps(dict, sort_keys=True))
 
 
