@@ -196,7 +196,7 @@ Options:
 
 	m.MapTo(r, (*martini.Routes)(nil))
 	m.Action(r.Handle)
-
+	fmt.Println("fe listen:", listen)
 	l, err := net.Listen("tcp", listen)
 	if err != nil {
 		log.PanicErrorf(err, "listen %s failed", listen)

@@ -29,7 +29,7 @@ codis-fe: codis-deps
 codis-server:
 	mkdir -p bin
 	rm -f bin/codis-server*
-	cd extern/redis/ && make distclean && make && cd -
+	cd extern/redis/ && make && cd -
 	cp -f extern/redis/src/redis-server  bin/codis-server
 	cp -f extern/redis/src/redis-benchmark bin/
 	cp -f extern/redis/src/redis-cli bin/
